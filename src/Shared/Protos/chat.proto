@@ -1,0 +1,94 @@
+syntax = "proto3";
+option csharp_namespace = "Messenger.Shared.Protos.Chat";
+package chat;
+
+service ChatServiceGrpc 
+{
+	rpc GetUserChatsWithLastMessageId (GetChatsWithLastMessageIdGrpcRequest) returns (GetChatsWithLastMessageIdGrpcResponse);
+	rpc GetChatsWithUnreadMessagesAndMembers (GetChatsWithUnreadMessagesAndMembersGrpcRequest) returns (GetChatsWithUnreadMessagesAndMembersGrpcResponse);
+	rpc SearchChatById (SearchChatByIdGrpcRequest) returns (SearchChatByIdGrpcResponse);
+	rpc SendMessageToChat (SendMessageToChatGrpcRequest) returns (SendMessageGrpcResponse);
+	rpc SendMessageToUser (SendMessageToUserGrpcRequest) returns (SendMessageGrpcResponse);
+}
+
+message GetChatsWithLastMessageIdGrpcRequest
+{
+	string user_id = 1;
+}
+
+message GetChatWithLastMessageIdGrpcResponse
+{
+	string chat_id = 1;
+	string last_message_id = 2;
+}
+
+message GetChatsWithLastMessageIdGrpcResponse
+{
+	repeated GetChatWithLastMessageIdGrpcResponse chats_with_last_message = 1;
+}
+
+message GetChatsWithUnreadMessagesAndMembersGrpcRequest
+{
+	string user_id = 1;
+	repeated string chats = 2;
+}
+
+message GetChatsWithUnreadMessagesAndMembersGrpcResponse
+{
+	repeated ChatWithUnreadMessagesAndMembersGrpcResponse chats = 1;
+}
+
+message ChatWithUnreadMessagesAndMembersGrpcResponse
+{
+	string chat_id = 1;
+	string image_url = 2;
+	bool is_group = 3;
+	int32 member_count = 4;
+	string name = 5;
+	repeated string membersIds = 6;
+	repeated UnreadMessageGrpcResponse unread_messages = 7;
+}
+
+message UnreadMessageGrpcResponse
+{
+	string id = 1;
+	string chat_id = 2;
+	string sender_id = 3;
+	string sent_at = 4;
+	string text = 5;
+}
+
+message SearchChatByIdGrpcRequest
+{
+	string chat_id = 1;
+}
+
+message SearchChatByIdGrpcResponse
+{
+	string chat_id = 1;
+	bool is_exists = 2;
+}
+
+message SendMessageToChatGrpcRequest
+{
+	string chat_id = 1;
+	string client_message_id = 2;
+	string sender_id = 3;
+	string text = 4;
+}
+
+message SendMessageToUserGrpcRequest
+{
+	string client_message_id = 1;
+	string recipient_id = 2;
+	string sender_id = 3;
+	string text = 4;
+}
+
+message SendMessageGrpcResponse
+{
+	string chat_id = 1;
+	string client_message_id = 2;
+	string message_id = 3;
+	bool is_success = 4;
+}

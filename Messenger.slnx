@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Элементы решения/">
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Project Path="src/Auth/AuthService.csproj" Id="2b165e5b-aeb2-4304-a147-f03f7aaada83" />
+  <Project Path="src/Chat/ChatService.csproj" />
+  <Project Path="src/ConnectionService/ConnectionService.csproj" Id="ba6002ed-960d-4a8a-9a4c-8867a86739ca" />
+  <Project Path="src/Gateway/GatewayService.csproj" />
+  <Project Path="src/Shared/Shared.csproj" Id="2ba04385-2aef-4e76-88b4-46ea19e9f48d" />
+</Solution>

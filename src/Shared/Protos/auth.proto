@@ -1,0 +1,139 @@
+syntax = "proto3";
+option csharp_namespace = "Messenger.Shared.Protos.Auth";
+package auth;
+
+service AuthServiceGrpc
+{
+	rpc Refresh (RefreshGrpcRequest) returns (AuthGrpcResponse);
+	rpc SignUp (SignUpGrpcRequest) returns (AuthGrpcResponse);
+	rpc SignIn (SignInGrpcRequest) returns (AuthGrpcResponse);
+	rpc GetUsersById (GetUsersByIdGrpcRequest) returns (GetUsersByIdGrpcResponse);
+	rpc HasEmailAlreadyTaken (HasEmailAlreadyTakenGrpcRequest) returns (HasEmailAlreadyTakenGrpcResponse);
+	rpc HasPhoneNumberAlreadyTaken (HasPhoneNumberAlreadyTakenGrpcRequest) returns (HasPhoneNumberAlreadyTakenGrpcResponse);
+	rpc HasUsernameAlreadyTaken (HasUsernameAlreadyTakenGrpcRequest) returns (HasUsernameAlreadyTakenGrpcResponse);
+	rpc SearchUserById (SearchUserByIdGrpcRequest) returns (SearchUserByIdGrpcResponse);
+	rpc SearchUsersByUsername (SearchUsersByUsernameGrpcRequest) returns (SearchUsersByUsernameGrpcResponse);
+	rpc VerifyPassword (VerifyPasswordGrpcRequest) returns (VerifyPasswordGrpcResponse);
+}
+
+message RefreshGrpcRequest
+{
+	string userId = 1;
+	string refresh_token = 2;
+}
+
+message SignUpGrpcRequest
+{
+	string username = 1;
+	string password = 2;
+	string name = 3;
+	optional string phone_number = 4;
+	optional string email = 5;
+}
+
+message SignInGrpcRequest
+{
+	string username = 1;
+	string password = 2;
+}
+
+message AuthGrpcResponse
+{
+	string user_id = 1;
+	string expires_at = 2;
+	string access_token = 3;
+	string refresh_token = 4;
+}
+
+message GetUsersByIdGrpcRequest
+{
+	repeated string users = 1;
+}
+
+message UserGrpcResponse
+{
+	string id = 1;
+	string image_url = 2;
+	string name = 3;
+	string username = 4;
+}
+
+message GetUsersByIdGrpcResponse
+{
+	repeated UserGrpcResponse users = 1;
+}
+
+message HasEmailAlreadyTakenGrpcRequest
+{
+	string email = 1;
+}
+
+message HasEmailAlreadyTakenGrpcResponse
+{
+	string email = 1;
+	bool has_taken = 2;
+}
+
+message HasPhoneNumberAlreadyTakenGrpcRequest
+{
+	string phone_number = 1;
+}
+
+message HasPhoneNumberAlreadyTakenGrpcResponse
+{
+	string phone_number = 1;
+	bool has_taken = 2;
+}
+
+message HasUsernameAlreadyTakenGrpcRequest
+{
+	string username = 1;
+}
+
+message HasUsernameAlreadyTakenGrpcResponse
+{
+	string username = 1;
+	bool has_taken = 2;
+}
+
+message SearchUsersByUsernameGrpcRequest
+{
+	string username = 1;
+}
+
+message SearchUsersByUsernameGrpcResponse
+{
+	repeated SearchUserByUsernameGrpcResponse users = 1;
+}
+
+message SearchUserByUsernameGrpcResponse
+{
+	string id = 1;
+	string name = 2;
+	string username = 3;
+}
+
+message SearchUserByIdGrpcRequest
+{
+	string user_id = 1;
+}
+
+message SearchUserByIdGrpcResponse
+{
+	string user_id = 1;
+	bool is_exists = 2;
+	optional string found_username = 3;
+}
+
+message VerifyPasswordGrpcRequest
+{
+	string username = 1;
+	string password = 2;
+}
+
+message VerifyPasswordGrpcResponse
+{
+	string username = 1;
+	string password = 2;
+	bool verified = 3;
+}

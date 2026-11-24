@@ -1,0 +1,138 @@
+networks:
+ messenger:
+   driver: bridge
+
+services:
+ auth_db:
+  container_name: auth_db
+  image: postgres:18.6-alpine
+  restart: unless-stopped
+  environment:
+   POSTGRES_USER: auth_user
+   POSTGRES_PASSWORD: auth_password
+   POSTGRES_DB: auth_database
+  ports:
+  - "5431:5432"
+  networks:
+  - messenger
+  healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_database"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+ chat_db:
+  container_name: chat_db
+  image: postgres:18.6-alpine
+  restart: unless-stopped
+  environment:
+   POSTGRES_USER: chat_user
+   POSTGRES_PASSWORD: chat_password
+   POSTGRES_DB: chat_database
+  ports:
+  - "5432:5432"
+  networks:
+  - messenger
+  healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chat_user -d chat_database"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+ rabbitmq:
+  image: rabbitmq:4.3.5-management-alpine
+  container_name: rabbitmq
+  hostname: my-rabbitmq 
+  restart: unless-stopped
+  environment:
+    - RABBITMQ_DEFAULT_USER=admin
+    - RABBITMQ_DEFAULT_PASS=admin_password
+  ports:
+    - "5672:5672"
+    - "15672:15672"
+  networks:
+  - messenger
+  volumes:
+    - rabbitmq_data:/var/lib/rabbitmq
+    - rabbitmq_logs:/var/log/rabbitmq
+  healthcheck:
+    test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+    interval: 5s
+    timeout: 5s
+    retries: 5
+    start_period: 10s
+
+
+ auth_service:
+  container_name: auth_service
+  image: messenger-auth
+  restart: unless-stopped
+  build:
+   context: .
+   dockerfile: src/Auth/Dockerfile
+  environment:
+  - ASPNETCORE_ENVIRONMENT=Development
+  - ConnectionStrings__DbConnection=Host=auth_db;Database=auth_database;Username=auth_user;Password=auth_password;
+  - ConnectionStrings__RabbitMQ=amqp://admin:admin_password@rabbitmq:5672/
+  - JwtSettings__SecretKey=super_secret_key_messenger_app_2026_long_enough
+  depends_on:
+  - auth_db
+  - rabbitmq
+  networks:
+  - messenger
+ 
+ chat_service:
+  container_name: chat_service
+  image: messenger-chat
+  restart: unless-stopped
+  build:
+   context: .
+   dockerfile: src/Chat/Dockerfile
+  environment:
+  - ASPNETCORE_ENVIRONMENT=Development
+  - ConnectionStrings__DbConnection=Host=chat_db;Database=chat_database;Username=chat_user;Password=chat_password
+  - ConnectionStrings__RabbitMQ=amqp://admin:admin_password@rabbitmq:5672/
+  depends_on:
+  - chat_db
+  - rabbitmq
+  networks:
+  - messenger
+
+ gateway_service:
+  container_name: gateway_service
+  image: messenger-gateway
+  restart: unless-stopped
+  build:
+   context: .
+   dockerfile: src/Gateway/Dockerfile
+  environment:
+  - ASPNETCORE_ENVIRONMENT=Development
+  ports:
+  - "5000:8080"
+  depends_on:
+  - auth_service
+  - chat_service
+  networks:
+  - messenger
+
+ connection_service:
+  container_name: connection_service
+  image: messenger-connection
+  restart: unless-stopped
+  build:
+   context: .
+   dockerfile: src/ConnectionService/Dockerfile
+  environment:
+  - ASPNETCORE_ENVIRONMENT=Development
+  - ConnectionStrings__RabbitMQ=amqp://admin:admin_password@rabbitmq:5672/
+  depends_on:
+  - gateway_service
+  networks:
+  - messenger
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_logs:
